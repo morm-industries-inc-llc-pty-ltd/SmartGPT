@@ -1,0 +1,1 @@
+PYTHONPATH=. streamlit run ./src/app.py
