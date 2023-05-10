@@ -2,3 +2,4 @@ streamlit
 openai
 tiktoken
 python-dotenv
+extra-streamlit-components
