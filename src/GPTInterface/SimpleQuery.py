@@ -34,15 +34,17 @@ def get_cents(tokens, model="gpt-3.5-turbo-0301"):
         return 0.00006 * tokens
 
 class SimpleQuery:
-    def __init__(self, messages = None):
+    def __init__(self, messages = None, quiet = False, model = "gpt-3.5-turbo-0301"):
+        self.quiet = quiet
+        self.model = model
         if messages == None:
             self.messages = []
         else: 
             self.messages = messages
 
     def append(self, role, content):
-        if role != "user" and role != "system":
-            raise ValueError("role must be either 'user' or 'system'")
+        if role != "user" and role != "system" and role != "assistant":
+            raise ValueError("role must be either 'user' or 'system' or 'assistant'")
 
         self.messages.append({"role": role, "content": content})
 
@@ -52,24 +54,29 @@ class SimpleQuery:
     def cost(self, model = "gpt-3.5-turbo-0301"):
         return get_cents(self.tokens(model), model)
 
-    @FileCache("chatgpt")
+    #@FileCache("chatgpt")
     def make_purchase(self, messages, model):
-        purchase = input("Make purchase? y/n")
+        if not self.quiet:
+            purchase = input("Make purchase? y/n")
+        else:
+            purchase = "y"
+
         if purchase == "y":
             return openai.ChatCompletion.create(
                 model=model,
-                messages=self.messages,
-                temperature=0,
+                messages=messages,
+                temperature=0.5,
             )
         else: 
             return None
 
-    def run(self, model = "gpt-3.5-turbo-0301"):
-        toks = self.tokens(model)
-        cost = self.cost(model)
-        print(f"Tokens: {toks}")
-        print(f"Cost: {cost}")
-        response = self.make_purchase(self.messages, model)
+    def run(self):
+        toks = self.tokens(self.model)
+        cost = self.cost(self.model)
+        if not self.quiet:
+            print(f"Tokens: {toks}")
+            print(f"Cost: {cost}")
+        response = self.make_purchase(self.messages, self.model)
         if response is not None:
             return response["choices"][0]["message"]["content"].strip()
         else: 
