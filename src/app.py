@@ -9,10 +9,6 @@ import sys
 import extra_streamlit_components as stx
 from openai.error import AuthenticationError, InvalidRequestError
 
-
-def get_manager():
-    return stx.CookieManager()
-
 # I don't really understand this, but it fixes import errors
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
@@ -25,6 +21,11 @@ hide_streamlit_style = """
             </style>
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+
+
+def get_manager():
+    return stx.CookieManager()
+
 
 cookie_manager = get_manager()
 
@@ -70,7 +71,7 @@ if 'details' not in st.session_state:
 def run_smart_gpt():
     try:
         # Add chain of thought suffix (Hebenstreit et al.) (https://arxiv.org/pdf/2305.02897.pdf)
-        chain_of_thought_suffix = "Let's work this out in a step by step way to be sure we have the right answer"
+        chain_of_thought_suffix = "Let's work this out in a step by step way to be sure we have the right answer:"
         prompt = input_text + "\n\n" + chain_of_thought_suffix
 
         query = SimpleQuery(quiet = True, model = model_choice)
@@ -133,7 +134,16 @@ def run_smart_gpt():
         st.session_state['progress'] = ""
 
 
-st.button("Run", on_click=run_smart_gpt, type='primary', use_container_width=True, disabled= oaik is None)
+st.button("Send a message.", on_click=run_smart_gpt, type='primary', use_container_width=True, disabled= oaik is None)
+
+
+m = st.markdown("""
+<style>
+div.stButton > button:first-child {
+    box-shadow: 0px 0px 1em rgb(0 0 0 / 0.3);
+}
+</style>""", unsafe_allow_html=True)
+
 
 my_bar = st.progress(0, text=st.session_state['progress'])
 if st.session_state['progress'] == "":
